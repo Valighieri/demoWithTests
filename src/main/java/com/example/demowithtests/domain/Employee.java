@@ -19,14 +19,18 @@ public final class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
 
     @Name
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "country")
     private String country;
 
     @ToLowerCase
+    @Column(name = "email")
     private String email;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -40,4 +44,7 @@ public final class Employee {
     @OneToOne  (cascade = CascadeType.ALL)
     @JoinColumn(name = "document_id", referencedColumnName = "id")
     private Document document;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = Boolean.FALSE;
 }

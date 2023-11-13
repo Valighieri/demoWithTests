@@ -33,8 +33,8 @@ public class EmployeeServiceBean implements EmployeeService {
     @ActivateCustomAnnotations({Name.class, ToLowerCase.class})
     // @Transactional(propagation = Propagation.MANDATORY)
     public Employee create(Employee employee) {
-        //return employeeRepository.save(employee);
-        return employeeRepository.saveAndFlush(employee);
+        return employeeRepository.save(employee);
+        //return employeeRepository.saveAndFlush(employee);
     }
 
     /**
@@ -46,9 +46,12 @@ public class EmployeeServiceBean implements EmployeeService {
         employeeRepository.saveEmployee(employee.getName(), employee.getEmail(), employee.getCountry(), String.valueOf(employee.getGender()));
     }
 
+    // TODO: получить всех (только при наличии isDeleted = false)
     @Override
     public List<Employee> getAll() {
-        return employeeRepository.findAll();
+
+        return employeeRepository.findAll().stream()
+                .toList();
     }
 
     @Override
@@ -59,17 +62,23 @@ public class EmployeeServiceBean implements EmployeeService {
         return list;
     }
 
+    // TODO: заменить условие if-а на метод ???
     @Override
     public Employee getById(Integer id) {
+
+
+
         var employee = employeeRepository.findById(id)
                 // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
                 .orElseThrow(ResourceNotFoundException::new);
-        /* if (employee.getIsDeleted()) {
+
+        if (employee.getIsDeleted()) {
             throw new EntityNotFoundException("Employee was deleted with id = " + id);
-        }*/
+        }
         return employee;
     }
 
+    // TODO: обновлять только при наличии isDeleted = false
     @Override
     public Employee updateById(Integer id, Employee employee) {
         return employeeRepository.findById(id)
@@ -82,17 +91,18 @@ public class EmployeeServiceBean implements EmployeeService {
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
     }
 
+    // TODO: удалять только при наличии isDeleted = false
     @Override
     public void removeById(Integer id) {
-        //repository.deleteById(id);
         var employee = employeeRepository.findById(id)
-                // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
+                //.orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
                 .orElseThrow(ResourceWasDeletedException::new);
-        //employee.setIsDeleted(true);
-        employeeRepository.delete(employee);
-        //repository.save(employee);
+
+        employee.setIsDeleted(Boolean.TRUE);
+        employeeRepository.save(employee);
     }
 
+    // TODO: удалять только при наличии isDeleted = false
     @Override
     public void removeAll() {
         employeeRepository.deleteAll();
