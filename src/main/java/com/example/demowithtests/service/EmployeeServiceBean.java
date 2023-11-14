@@ -56,9 +56,13 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public void removeAll() {
-        employeeRepository.findAll().stream()
-                .filter(this::IsEmployeePresent)
-                .forEach(emp -> emp.setIsDeleted(Boolean.TRUE));
+        List<Employee> list =
+                employeeRepository.findAll().stream()
+                        .filter(this::IsEmployeePresent)
+                        .peek(emp -> emp.setIsDeleted(Boolean.TRUE))
+                        .toList();
+
+        employeeRepository.saveAll(list);
     }
 
     @Override
@@ -233,18 +237,17 @@ public class EmployeeServiceBean implements EmployeeService {
     private Employee IsEmployeePresent(int id) {
         var employee = employeeRepository.findById(id)
                 .orElseThrow(ResourceNotFoundException::new);
-        if (employee.getIsDeleted()) return null;
-        else return employee;
+
+        Boolean isDeleted = employee.getIsDeleted();
+        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return employee;
+        else return null;
     }
 
     private boolean IsEmployeePresent(Employee employee) {
         Boolean isDeleted = employee.getIsDeleted();
-        if (isDeleted == null || isDeleted.equals(Boolean.TRUE)) return false;
-        else return true;
+        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return true;
+        else return false;
     }
-
-
-
 
 
 //    @Override
@@ -274,4 +277,6 @@ public class EmployeeServiceBean implements EmployeeService {
 //                        && emp.getIsDeleted().equals(Boolean.FALSE))
 //                .toList();
 //    }
+
+
 }
