@@ -46,12 +46,54 @@ public class EmployeeServiceBean implements EmployeeService {
         employeeRepository.saveEmployee(employee.getName(), employee.getEmail(), employee.getCountry(), String.valueOf(employee.getGender()));
     }
 
-    // TODO: получить всех (только при наличии isDeleted = false)
+
     @Override
     public List<Employee> getAll() {
-
         return employeeRepository.findAll().stream()
+                .filter(this::IsEmployeePresent)
                 .toList();
+    }
+
+    @Override
+    public void removeAll() {
+        employeeRepository.findAll().stream()
+                .filter(this::IsEmployeePresent)
+                .forEach(emp -> emp.setIsDeleted(Boolean.TRUE));
+    }
+
+    @Override
+    public Employee getById(Integer id) {
+        var foundEmployee = IsEmployeePresent(id);
+        if (foundEmployee == null) {
+            throw new EntityNotFoundException("Employee was deleted with id = " + id);
+        } else
+            return foundEmployee;
+    }
+
+
+    @Override
+    public Employee updateById(Integer id, Employee employee) {
+        var foundEmployee = IsEmployeePresent(id);
+
+        if (foundEmployee == null) {
+            throw new EntityNotFoundException("Employee not found with id = " + id);
+        } else {
+            foundEmployee.setName(employee.getName());
+            foundEmployee.setEmail(employee.getEmail());
+            foundEmployee.setCountry(employee.getCountry());
+            return employeeRepository.save(foundEmployee);
+        }
+    }
+
+    @Override
+    public void removeById(Integer id) {
+        var foundEmployee = IsEmployeePresent(id);
+        if (foundEmployee == null) {
+            throw new ResourceWasDeletedException();
+        } else {
+            foundEmployee.setIsDeleted(Boolean.TRUE);
+            employeeRepository.save(foundEmployee);
+        }
     }
 
     @Override
@@ -62,51 +104,6 @@ public class EmployeeServiceBean implements EmployeeService {
         return list;
     }
 
-    // TODO: заменить условие if-а на метод ???
-    @Override
-    public Employee getById(Integer id) {
-
-
-
-        var employee = employeeRepository.findById(id)
-                // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-                .orElseThrow(ResourceNotFoundException::new);
-
-        if (employee.getIsDeleted()) {
-            throw new EntityNotFoundException("Employee was deleted with id = " + id);
-        }
-        return employee;
-    }
-
-    // TODO: обновлять только при наличии isDeleted = false
-    @Override
-    public Employee updateById(Integer id, Employee employee) {
-        return employeeRepository.findById(id)
-                .map(entity -> {
-                    entity.setName(employee.getName());
-                    entity.setEmail(employee.getEmail());
-                    entity.setCountry(employee.getCountry());
-                    return employeeRepository.save(entity);
-                })
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-    }
-
-    // TODO: удалять только при наличии isDeleted = false
-    @Override
-    public void removeById(Integer id) {
-        var employee = employeeRepository.findById(id)
-                //.orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-                .orElseThrow(ResourceWasDeletedException::new);
-
-        employee.setIsDeleted(Boolean.TRUE);
-        employeeRepository.save(employee);
-    }
-
-    // TODO: удалять только при наличии isDeleted = false
-    @Override
-    public void removeAll() {
-        employeeRepository.deleteAll();
-    }
 
     /*@Override
     public Page<Employee> findByCountryContaining(String country, Pageable pageable) {
@@ -233,5 +230,48 @@ public class EmployeeServiceBean implements EmployeeService {
         employeeRepository.updateEmployeeByName(name, id);
     }
 
+    private Employee IsEmployeePresent(int id) {
+        var employee = employeeRepository.findById(id)
+                .orElseThrow(ResourceNotFoundException::new);
+        if (employee.getIsDeleted()) return null;
+        else return employee;
+    }
 
+    private boolean IsEmployeePresent(Employee employee) {
+        Boolean isDeleted = employee.getIsDeleted();
+        if (isDeleted == null || isDeleted.equals(Boolean.TRUE)) return false;
+        else return true;
+    }
+
+
+
+
+
+//    @Override
+//    public Employee updateById(Integer id, Employee employee) {
+//        return employeeRepository.findById(id)
+//                .map(entity -> {
+//                    entity.setName(employee.getName());
+//                    entity.setEmail(employee.getEmail());
+//                    entity.setCountry(employee.getCountry());
+//                    return employeeRepository.save(entity);
+//                })
+//                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
+//    }
+
+//    @Override
+//    public void removeAll() {
+//        employeeRepository.findAll().stream()
+//                .filter(emp -> emp.getIsDeleted() != null
+//                        && emp.getIsDeleted().equals(Boolean.FALSE))
+//                .forEach(emp -> emp.setIsDeleted(Boolean.TRUE));
+//    }
+//
+//    @Override
+//    public List<Employee> getAll() {
+//        return employeeRepository.findAll().stream()
+//                .filter(emp -> emp.getIsDeleted() != null
+//                        && emp.getIsDeleted().equals(Boolean.FALSE))
+//                .toList();
+//    }
 }
