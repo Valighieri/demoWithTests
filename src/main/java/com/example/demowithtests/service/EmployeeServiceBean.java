@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @AllArgsConstructor
@@ -67,37 +68,41 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public Employee getById(Integer id) {
-        var foundEmployee = IsEmployeePresent(id);
-        if (foundEmployee == null) {
-            throw new EntityNotFoundException("Employee was deleted with id = " + id);
-        } else
-            return foundEmployee;
-    }
-
-
-    @Override
-    public Employee updateById(Integer id, Employee employee) {
-        var foundEmployee = IsEmployeePresent(id);
-
-        if (foundEmployee == null) {
-            throw new EntityNotFoundException("Employee not found with id = " + id);
-        } else {
-            foundEmployee.setName(employee.getName());
-            foundEmployee.setEmail(employee.getEmail());
-            foundEmployee.setCountry(employee.getCountry());
-            return employeeRepository.save(foundEmployee);
-        }
+        return employeeRepository.findById(id)
+                .filter(this::IsEmployeePresent)
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + id));
     }
 
     @Override
     public void removeById(Integer id) {
-        var foundEmployee = IsEmployeePresent(id);
-        if (foundEmployee == null) {
-            throw new ResourceWasDeletedException();
-        } else {
-            foundEmployee.setIsDeleted(Boolean.TRUE);
-            employeeRepository.save(foundEmployee);
-        }
+        employeeRepository.findById(id)
+                .filter(this::IsEmployeePresent)
+                .map(employee -> {
+                    employee.setIsDeleted(Boolean.TRUE);
+                    return employeeRepository.save(employee);
+                })
+                .orElseThrow(ResourceWasDeletedException::new);
+    }
+
+    @Override
+    public Employee updateById(Integer id, Employee employee) {
+        return employeeRepository.findById(id)
+                .filter(this::IsEmployeePresent)
+                .map(entity -> {
+                    entity.setName(employee.getName());
+                    entity.setEmail(employee.getEmail());
+                    entity.setCountry(employee.getCountry());
+                    return employeeRepository.save(entity);
+                })
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + id));
+    }
+
+    private boolean IsEmployeePresent(Employee employee) {
+        Boolean isDeleted = employee.getIsDeleted();
+        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return true;
+        else return false;
     }
 
     @Override
@@ -233,50 +238,5 @@ public class EmployeeServiceBean implements EmployeeService {
 
         employeeRepository.updateEmployeeByName(name, id);
     }
-
-    private Employee IsEmployeePresent(int id) {
-        var employee = employeeRepository.findById(id)
-                .orElseThrow(ResourceNotFoundException::new);
-
-        Boolean isDeleted = employee.getIsDeleted();
-        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return employee;
-        else return null;
-    }
-
-    private boolean IsEmployeePresent(Employee employee) {
-        Boolean isDeleted = employee.getIsDeleted();
-        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return true;
-        else return false;
-    }
-
-
-//    @Override
-//    public Employee updateById(Integer id, Employee employee) {
-//        return employeeRepository.findById(id)
-//                .map(entity -> {
-//                    entity.setName(employee.getName());
-//                    entity.setEmail(employee.getEmail());
-//                    entity.setCountry(employee.getCountry());
-//                    return employeeRepository.save(entity);
-//                })
-//                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-//    }
-
-//    @Override
-//    public void removeAll() {
-//        employeeRepository.findAll().stream()
-//                .filter(emp -> emp.getIsDeleted() != null
-//                        && emp.getIsDeleted().equals(Boolean.FALSE))
-//                .forEach(emp -> emp.setIsDeleted(Boolean.TRUE));
-//    }
-//
-//    @Override
-//    public List<Employee> getAll() {
-//        return employeeRepository.findAll().stream()
-//                .filter(emp -> emp.getIsDeleted() != null
-//                        && emp.getIsDeleted().equals(Boolean.FALSE))
-//                .toList();
-//    }
-
 
 }
