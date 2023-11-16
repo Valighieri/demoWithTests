@@ -75,8 +75,8 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     @Override
-    public void removeById(Integer id) {
-        employeeRepository.findById(id)
+    public Employee removeById(Integer id) {
+        return employeeRepository.findById(id)
                 .filter(this::IsEmployeePresent)
                 .map(employee -> {
                     employee.setIsDeleted(Boolean.TRUE);

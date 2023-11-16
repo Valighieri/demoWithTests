@@ -1,6 +1,7 @@
 package com.example.demowithtests.web;
 
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.dto.DeleteDto;
 import com.example.demowithtests.dto.EmployeeDto;
 import com.example.demowithtests.dto.EmployeeReadDto;
 import com.example.demowithtests.service.EmployeeService;
@@ -108,9 +109,12 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/users/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeEmployeeById(@PathVariable Integer id) {
-        employeeService.removeById(id);
+    @ResponseStatus(HttpStatus.OK)
+    public DeleteDto removeEmployeeById(@PathVariable Integer id) {
+        log.debug("removeEmployeeById() - start: id = {}", id);
+        DeleteDto dto = employeeMapper.toDeleteEmployeeDto(employeeService.removeById(id));
+        log.debug("removeEmployeeById() - stop: employee = {}", dto);
+        return dto;
     }
 
     @DeleteMapping("/users")
