@@ -23,7 +23,7 @@ public interface EmployeeService {
 
     Employee removeById(Integer id);
 
-    void removeAll();
+    List<Employee> removeAll();
 
     //Page<Employee> findByCountryContaining(String country, Pageable pageable);
 
@@ -59,6 +59,6 @@ public interface EmployeeService {
 
     List<Employee> findByNameContaining(String name);
 
-    void updateEmployeeByName(String name, Integer id);
+    Employee updateEmployeeByName(String name, Integer id);
 
 }

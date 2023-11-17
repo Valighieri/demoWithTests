@@ -4,6 +4,7 @@ import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.dto.DeleteDto;
 import com.example.demowithtests.dto.EmployeeDto;
 import com.example.demowithtests.dto.EmployeeReadDto;
+import com.example.demowithtests.dto.UpdateDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.service.EmployeeServiceEM;
 import com.example.demowithtests.util.mappers.EmployeeMapper;
@@ -20,9 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.demowithtests.util.Endpoints.API_BASE;
 import static com.example.demowithtests.util.Endpoints.USER_ENDPOINT;
@@ -56,19 +55,25 @@ public class EmployeeController {
 
     @PostMapping("/users/jpa")
     @ResponseStatus(HttpStatus.CREATED)
-    public Employee saveEmployee(@RequestBody Employee employee) {
-        log.debug("saveEmployeeWithJpa() - start: employee = {}", employee);
-        Employee saved = employeeServiceEM.createWithJpa(employee);
-        log.debug("saveEmployeeWithJpa() - stop: employee = {}", employee.getId());
-        return saved;
+    public EmployeeDto saveEmployeeWithJpa(@RequestBody EmployeeDto employeeDto) {
+        log.debug("saveEmployeeWithJpa() - start: employee = {}", employeeDto);
+        var employee = employeeMapper.toEmployee(employeeDto);
+        var dto = employeeMapper.toEmployeeDto(employeeServiceEM.createWithJpa(employee));
+        log.debug("saveEmployeeWithJpa() - stop: employee = {}", employeeDto.id());
+        return dto;
     }
 
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getAllUsers() {
-        return employeeService.getAll();
+    public List<EmployeeReadDto> getAllUsers() {
+        log.debug("getAllUsers() - start");
+        List<EmployeeReadDto> dtoList =
+                employeeMapper.toListEmployeeReadDto(employeeService.getAll());
+        log.debug("getAllUsers() - stop");
+        return dtoList;
     }
 
+    //TODO Чекнуть що воно таке
     @GetMapping("/users/pages")
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getPage(
@@ -100,11 +105,11 @@ public class EmployeeController {
 
     @PutMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EmployeeReadDto refreshEmployee(@PathVariable("id") Integer id, @RequestBody EmployeeDto employee) {
+    public UpdateDto refreshEmployee(@PathVariable("id") Integer id, @RequestBody EmployeeDto employee) {
         log.debug("refreshEmployee() EmployeeController - start: id = {}", id);
         Employee entity = employeeMapper.toEmployee(employee);
-        EmployeeReadDto dto = employeeMapper.toEmployeeReadDto(employeeService.updateById(id, entity));
-        log.debug("refreshEmployee() EmployeeController - end: name = {}", dto.name);
+        var dto = employeeMapper.toUpdateEmployeeDto(employeeService.updateById(id, entity));
+        log.debug("refreshEmployee() EmployeeController - end: name = {}", dto.name());
         return dto;
     }
 
@@ -118,11 +123,16 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/users")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeAllUsers() {
-        employeeService.removeAll();
+    @ResponseStatus(HttpStatus.OK)
+    public List<DeleteDto> removeAllUsers() {
+        log.debug("removeAllUsers() - start");
+        List<DeleteDto> dtoList =
+                employeeMapper.toListDeleteEmployeeDto(employeeService.removeAll());
+        log.debug("removeAllUsers() - stop");
+        return dtoList;
     }
 
+    //TODO Чекнуть що воно таке
     @GetMapping("/users/country")
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> findByCountry(@RequestParam(required = false) String country,
@@ -135,30 +145,34 @@ public class EmployeeController {
         return employeeService.findByCountryContaining(country, page, size, sortList, sortOrder.toString()).map(employeeMapper::toEmployeeReadDto);
     }
 
+    //TODO
     @GetMapping("/users/c")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllUsersC() {
         return employeeService.getAllEmployeeCountry();
     }
 
+    //TODO
     @GetMapping("/users/s")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllUsersSort() {
         return employeeService.getSortCountry();
     }
 
+    //TODO
     @GetMapping("/users/emails")
     @ResponseStatus(HttpStatus.OK)
     public Optional<String> getAllUsersSo() {
         return employeeService.findEmails();
     }
 
+    //TODO
     @GetMapping("/users/countryBy")
     @ResponseStatus(HttpStatus.OK)
     public List<Employee> getByCountry(@RequestParam(required = true) String country) {
         return employeeService.filterByCountry(country);
     }
-
+    //TODO
     @PatchMapping("/users/ukrainians")
     @ResponseStatus(HttpStatus.OK)
     public Set<String> sendEmailsAllUkrainian() {
@@ -167,29 +181,35 @@ public class EmployeeController {
 
     @GetMapping("/users/names")
     @ResponseStatus(HttpStatus.OK)
-    public List<Employee> findByNameContaining(@RequestParam String employeeName) {
+    public List<EmployeeReadDto> findByNameContaining(@RequestParam String employeeName) {
         log.debug("findByNameContaining() EmployeeController - start: employeeName = {}", employeeName);
-        List<Employee> employees = employeeService.findByNameContaining(employeeName);
-        log.debug("findByNameContaining() EmployeeController - end: employees = {}", employees.size());
-        return employees;
+        List<EmployeeReadDto> dtoList = employeeMapper.toListEmployeeReadDto(
+                employeeService.findByNameContaining(employeeName)
+        );
+        log.debug("findByNameContaining() EmployeeController - end: employees = {}", dtoList.size());
+        return dtoList;
     }
 
-    @PatchMapping("/users/names/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void refreshEmployeeName(@PathVariable("id") Integer id, @RequestParam String employeeName) {
-        log.debug("refreshEmployeeName() EmployeeController - start: id = {}", id);
-        employeeService.updateEmployeeByName(employeeName, id);
-        log.debug("refreshEmployeeName() EmployeeController - end: ");
-    }
+//    @PatchMapping("/users/names/{id}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public UpdateDto refreshEmployeeName(@PathVariable("id") Integer id,
+//                                         @RequestParam String employeeName) {
+//        log.debug("refreshEmployeeName() EmployeeController - start: id = {}", id);
+//        var dto = employeeMapper.toUpdateEmployeeDto(
+//                employeeService.updateEmployeeByName(employeeName, id));
+//        log.debug("refreshEmployeeName() EmployeeController - end: ");
+//        return dto;
+//    }
 
     @PatchMapping("/users/names/body/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Employee refreshEmployeeNameBody(@PathVariable("id") Integer id, @RequestParam String employeeName) {
+    public UpdateDto refreshEmployeeNameBody(@PathVariable("id") Integer id,
+                                             @RequestParam String employeeName) {
         log.debug("refreshEmployeeName() EmployeeController - start: id = {}", id);
-        employeeService.updateEmployeeByName(employeeName, id);
-        Employee employee = employeeService.getById(id);
+        var dto = employeeMapper.toUpdateEmployeeDto(
+                employeeService.updateEmployeeByName(employeeName, id));
         log.debug("refreshEmployeeName() EmployeeController - end: id = {}", id);
-        return employee;
+        return dto;
     }
 
     @PostMapping("/employees")

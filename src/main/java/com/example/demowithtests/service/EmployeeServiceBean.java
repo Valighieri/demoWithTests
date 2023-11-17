@@ -6,7 +6,6 @@ import com.example.demowithtests.service.emailSevice.EmailSenderService;
 import com.example.demowithtests.util.annotations.entity.ActivateCustomAnnotations;
 import com.example.demowithtests.util.annotations.entity.Name;
 import com.example.demowithtests.util.annotations.entity.ToLowerCase;
-import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import com.example.demowithtests.util.exception.ResourceWasDeletedException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @AllArgsConstructor
@@ -38,10 +36,6 @@ public class EmployeeServiceBean implements EmployeeService {
         //return employeeRepository.saveAndFlush(employee);
     }
 
-    /**
-     * @param employee
-     * @return
-     */
     @Override
     public void createAndSave(Employee employee) {
         employeeRepository.saveEmployee(employee.getName(), employee.getEmail(), employee.getCountry(), String.valueOf(employee.getGender()));
@@ -56,7 +50,7 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     @Override
-    public void removeAll() {
+    public List<Employee> removeAll() {
         List<Employee> list =
                 employeeRepository.findAll().stream()
                         .filter(this::IsEmployeePresent)
@@ -64,6 +58,7 @@ public class EmployeeServiceBean implements EmployeeService {
                         .toList();
 
         employeeRepository.saveAll(list);
+        return list;
     }
 
     @Override
@@ -97,6 +92,26 @@ public class EmployeeServiceBean implements EmployeeService {
                 })
                 .orElseThrow(() -> new EntityNotFoundException
                         ("Employee not found with id = " + id));
+    }
+
+    @Override
+    public Employee updateEmployeeByName(String name, Integer id) {
+        return employeeRepository.findById(id)
+                .filter(this::IsEmployeePresent)
+                .map(entity -> {
+                    entity.setName(name);
+                    return employeeRepository.save(entity);
+                })
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + id));
+    }
+
+    @Override
+    public List<Employee> findByNameContaining(String name) {
+        return employeeRepository.findByNameContaining(name)
+                .stream()
+                .filter(this::IsEmployeePresent)
+                .toList();
     }
 
     private boolean IsEmployeePresent(Employee employee) {
@@ -144,14 +159,13 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public List<String> getAllEmployeeCountry() {
         log.info("getAllEmployeeCountry() - start:");
-        List<Employee> employeeList = employeeRepository.findAll();
+        List<Employee> employeeList = employeeRepository.findAll()
+                .stream().filter(this::IsEmployeePresent).toList();
+
         List<String> countries = employeeList.stream()
-                .map(country -> country.getCountry())
-                .collect(Collectors.toList());
-        /*List<String> countries = employeeList.stream()
                 .map(Employee::getCountry)
                 //.sorted(Comparator.naturalOrder())
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
 
         log.info("getAllEmployeeCountry() - end: countries = {}", countries);
         return countries;
@@ -212,31 +226,13 @@ public class EmployeeServiceBean implements EmployeeService {
         return emails;
     }
 
-    /**
-     * @param name
-     * @return
-     */
-    @Override
-    public List<Employee> findByNameContaining(String name) {
-        return employeeRepository.findByNameContaining(name);
-    }
+
 
     /**
      * @param name
      * @param id
      * @return
      */
-    @Override
-    public void updateEmployeeByName(String name, Integer id) {
-        /*var employee = employeeRepository.findById(id)
-                .map(entity -> {
-                    entity.setName(name);
-                    return employeeRepository.save(entity);
-                })
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-        return employee;*/
 
-        employeeRepository.updateEmployeeByName(name, id);
-    }
 
 }
