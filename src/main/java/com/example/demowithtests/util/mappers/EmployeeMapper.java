@@ -24,5 +24,4 @@ public interface EmployeeMapper {
     List<EmployeeReadDto> toListEmployeeReadDto(List<Employee> employees);
 
     UpdateDto toUpdateEmployeeDto(Employee employee);
-
 }

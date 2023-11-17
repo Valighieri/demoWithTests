@@ -1,10 +1,7 @@
 package com.example.demowithtests.web;
 
 import com.example.demowithtests.domain.Employee;
-import com.example.demowithtests.dto.DeleteDto;
-import com.example.demowithtests.dto.EmployeeDto;
-import com.example.demowithtests.dto.EmployeeReadDto;
-import com.example.demowithtests.dto.UpdateDto;
+import com.example.demowithtests.dto.*;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.service.EmployeeServiceEM;
 import com.example.demowithtests.util.mappers.EmployeeMapper;
@@ -145,34 +142,32 @@ public class EmployeeController {
         return employeeService.findByCountryContaining(country, page, size, sortList, sortOrder.toString()).map(employeeMapper::toEmployeeReadDto);
     }
 
-    //TODO
     @GetMapping("/users/c")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllUsersC() {
         return employeeService.getAllEmployeeCountry();
     }
 
-    //TODO
     @GetMapping("/users/s")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllUsersSort() {
         return employeeService.getSortCountry();
     }
 
-    //TODO
     @GetMapping("/users/emails")
     @ResponseStatus(HttpStatus.OK)
     public Optional<String> getAllUsersSo() {
         return employeeService.findEmails();
     }
 
-    //TODO
     @GetMapping("/users/countryBy")
     @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getByCountry(@RequestParam(required = true) String country) {
-        return employeeService.filterByCountry(country);
+    public List<EmployeeReadDto> getByCountry(@RequestParam(required = true) String country) {
+        return employeeMapper.toListEmployeeReadDto(
+                employeeService.filterByCountry(country)
+        );
     }
-    //TODO
+
     @PatchMapping("/users/ukrainians")
     @ResponseStatus(HttpStatus.OK)
     public Set<String> sendEmailsAllUkrainian() {

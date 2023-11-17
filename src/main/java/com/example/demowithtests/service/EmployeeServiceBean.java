@@ -173,7 +173,10 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public List<String> getSortCountry() {
-        List<Employee> employeeList = employeeRepository.findAll();
+        List<Employee> employeeList = employeeRepository.findAll()
+                .stream().filter(this::IsEmployeePresent)
+                .toList();
+
         return employeeList.stream()
                 .map(Employee::getCountry)
                 .filter(c -> c.startsWith("U"))
@@ -183,28 +186,36 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public Optional<String> findEmails() {
-        var employeeList = employeeRepository.findAll();
+        var employeeList = employeeRepository.findAll()
+                .stream().filter(this::IsEmployeePresent)
+                .toList();
 
         var emails = employeeList.stream()
                 .map(Employee::getEmail)
-                .collect(Collectors.toList());
+                .toList();
 
         var opt = emails.stream()
                 .filter(s -> s.endsWith(".com"))
                 .findFirst()
                 .orElse("error?");
+
         return Optional.ofNullable(opt);
     }
 
     @Override
     public List<Employee> filterByCountry(String country) {
-        return employeeRepository.findEmployeesByCountry(country);
+        return employeeRepository.findEmployeesByCountry(country)
+                .stream().filter(this::IsEmployeePresent)
+                .toList();
     }
 
     @Override
     public Set<String> sendEmailsAllUkrainian() {
         var ukrainians = employeeRepository.findAllUkrainian()
                 .orElseThrow(() -> new EntityNotFoundException("Employees from Ukraine not found!"));
+
+        var filteredUkrainians = ukrainians.stream().filter(this::IsEmployeePresent);
+
         var emails = new HashSet<String>();
         ukrainians.forEach(employee -> {
             emailSenderService.sendEmail(
@@ -225,7 +236,6 @@ public class EmployeeServiceBean implements EmployeeService {
 
         return emails;
     }
-
 
 
     /**
