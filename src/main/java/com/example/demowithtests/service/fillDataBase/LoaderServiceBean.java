@@ -40,10 +40,11 @@ public class LoaderServiceBean implements LoaderService {
         long seed = 1;
 
         Faker faker = new Faker(new Locale("en"), new Random(seed));
-        for (int i = 0; i < 2_000; i++) {
+        for (int i = 0; i < 6_500; i++) {
 
             String name = faker.name().name();
             String country = faker.country().name();
+//            String country = "France";
             String email = faker.name().name();
 
             Set<Address> addresses = Set.copyOf(Arrays.asList(new Address(), new Address()));

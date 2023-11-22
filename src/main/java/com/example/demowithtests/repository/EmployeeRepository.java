@@ -73,4 +73,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     @Query(value = "UPDATE users SET name = ?1, email = ?2, country = ?3 WHERE id = ?4", nativeQuery = true)
     Integer updateEmployee(String name, String email, String country, Integer id);
 
+    @Query(value = "SELECT * FROM users WHERE country = 'France'", nativeQuery = true)
+    List<Employee> findAllFrench();
 }

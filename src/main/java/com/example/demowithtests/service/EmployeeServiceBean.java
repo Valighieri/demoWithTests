@@ -8,6 +8,7 @@ import com.example.demowithtests.util.annotations.entity.Name;
 import com.example.demowithtests.util.annotations.entity.ToLowerCase;
 import com.example.demowithtests.util.exception.ResourceWasDeletedException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -114,12 +115,6 @@ public class EmployeeServiceBean implements EmployeeService {
                 .toList();
     }
 
-    private boolean IsEmployeePresent(Employee employee) {
-        Boolean isDeleted = employee.getIsDeleted();
-        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return true;
-        else return false;
-    }
-
     @Override
     public Page<Employee> getAllWithPagination(Pageable pageable) {
         log.debug("getAllWithPagination() - start: pageable = {}", pageable);
@@ -209,12 +204,16 @@ public class EmployeeServiceBean implements EmployeeService {
                 .toList();
     }
 
+    private boolean IsEmployeePresent(Employee employee) {
+        Boolean isDeleted = employee.getIsDeleted();
+        if (isDeleted != null && isDeleted.equals(Boolean.FALSE)) return true;
+        else return false;
+    }
+
     @Override
     public Set<String> sendEmailsAllUkrainian() {
         var ukrainians = employeeRepository.findAllUkrainian()
                 .orElseThrow(() -> new EntityNotFoundException("Employees from Ukraine not found!"));
-
-        var filteredUkrainians = ukrainians.stream().filter(this::IsEmployeePresent);
 
         var emails = new HashSet<String>();
         ukrainians.forEach(employee -> {
@@ -237,6 +236,17 @@ public class EmployeeServiceBean implements EmployeeService {
         return emails;
     }
 
+
+    @Override
+    public String renameAllFrenchCitizens(String replaceName) {
+        var french = employeeRepository.findAllFrench()
+                .stream().filter(this::IsEmployeePresent)
+                .peek(employee -> employee.setName(replaceName))
+                .toList();
+
+        employeeRepository.saveAll(french);
+        return "All french " + french.size() + " users were updated. ";
+    }
 
     /**
      * @param name
