@@ -81,4 +81,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE users SET name = ?1 WHERE country = 'France'", nativeQuery = true)
     Integer updateAllFrenchNames(String name);
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "update Employee set name = ?1 where country = ?2")
+    Integer updateEmployeeNamesByCountry(String name, String country);
 }
