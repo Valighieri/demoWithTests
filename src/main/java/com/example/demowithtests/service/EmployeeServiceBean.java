@@ -236,7 +236,6 @@ public class EmployeeServiceBean implements EmployeeService {
         return emails;
     }
 
-
     @Override
     public String renameAllFrenchCitizens(String replaceName) {
         var french = employeeRepository.findAllFrench()

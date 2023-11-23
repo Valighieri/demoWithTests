@@ -216,34 +216,11 @@ public class EmployeeController {
 
     @PostMapping("/users/french")
     @ResponseStatus(HttpStatus.OK)
-    public String renameAllFrenchCitizens(@RequestParam String replaceName){
+    public String renameAllFrenchCitizens(@RequestParam String replaceName) {
         log.debug("renameAllFrenchCitizens() - start: replaceName = {}", replaceName);
         String respond = employeeService.renameAllFrenchCitizens(replaceName);
         log.debug("renameAllFrenchCitizens() - stop");
         return respond;
     }
-
-    @PatchMapping("/users/french")
-    @ResponseStatus(HttpStatus.OK)
-    public String renameAllFrenchCitizensWithPatch(@RequestParam String replaceName){
-        log.debug("renameAllFrenchCitizens() - start: replaceName = {}", replaceName);
-        String respond = employeeService.renameAllFrenchCitizens(replaceName);
-        log.debug("renameAllFrenchCitizens() - stop");
-        return respond;
-    }
-
-
-
-//    @PatchMapping("/users/french")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<UpdateDto> renameAllFrenchCitizensWithPatch(@RequestParam String replaceName){
-//        log.debug("renameAllFrenchCitizens() - start: replaceName = {}", replaceName);
-//        List<UpdateDto> dtoList =
-//                employeeMapper.toListUpdateEmployeeDto(
-//                        employeeService.renameAllFrenchCitizens(replaceName)
-//                );
-//        log.debug("renameAllFrenchCitizens() - stop: employees = {}", dtoList.size());
-//        return dtoList;
-//    }
 
 }
