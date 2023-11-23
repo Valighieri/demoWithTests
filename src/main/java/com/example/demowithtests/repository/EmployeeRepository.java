@@ -1,6 +1,7 @@
 package com.example.demowithtests.repository;
 
 import com.example.demowithtests.domain.Employee;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -75,4 +76,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     @Query(value = "SELECT * FROM users WHERE country = 'France'", nativeQuery = true)
     List<Employee> findAllFrench();
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE users SET name = ?1 WHERE country = 'France'", nativeQuery = true)
+    Integer updateAllFrenchNames(String name);
 }
