@@ -243,6 +243,13 @@ public class EmployeeServiceBean implements EmployeeService {
                 + " users were updated. ";
     }
 
+    @Override
+    public String updateEmployeeNamesByCountry(String name, String country) {
+        return "All french " +
+                employeeRepository.updateEmployeeNamesByCountry(name, country)
+                + " users were updated. ";
+    }
+
     /**
      * @param name
      * @param id

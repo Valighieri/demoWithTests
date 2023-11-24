@@ -223,4 +223,14 @@ public class EmployeeController {
         return respond;
     }
 
+    @PutMapping("/users/country")
+    @ResponseStatus(HttpStatus.OK)
+    public String renameEmployeeByCountry(@RequestParam String name,
+                                          @RequestParam String country) {
+        log.debug("renameEmployeeByCountry() - start: replaceName = {}", name);
+        String respond = employeeService.updateEmployeeNamesByCountry(name, country);
+        log.debug("renameEmployeeByCountry() - stop");
+        return respond;
+    }
+
 }
