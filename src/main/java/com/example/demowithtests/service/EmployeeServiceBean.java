@@ -237,14 +237,10 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     @Override
-    public String renameAllFrenchCitizens(String replaceName) {
-        var french = employeeRepository.findAllFrench()
-                .stream().filter(this::IsEmployeePresent)
-                .peek(employee -> employee.setName(replaceName))
-                .toList();
-
-        employeeRepository.saveAll(french);
-        return "All french " + french.size() + " users were updated. ";
+    public String renameAllFrenchCitizens(String name) {
+        return "All french " +
+                employeeRepository.updateAllFrenchNames(name)
+                + " users were updated. ";
     }
 
     /**

@@ -214,11 +214,11 @@ public class EmployeeController {
         return "employee with name: " + employee.getName() + " saved!";
     }
 
-    @PostMapping("/users/french")
+    @PutMapping("/users/french")
     @ResponseStatus(HttpStatus.OK)
-    public String renameAllFrenchCitizens(@RequestParam String replaceName) {
-        log.debug("renameAllFrenchCitizens() - start: replaceName = {}", replaceName);
-        String respond = employeeService.renameAllFrenchCitizens(replaceName);
+    public String renameAllFrenchCitizens(@RequestParam String name) {
+        log.debug("renameAllFrenchCitizens() - start: name = {}", name);
+        String respond = employeeService.renameAllFrenchCitizens(name);
         log.debug("renameAllFrenchCitizens() - stop");
         return respond;
     }
