@@ -62,4 +62,5 @@ public interface EmployeeService {
     Employee updateEmployeeByName(String name, Integer id);
 
     String renameAllFrenchCitizens(String replaceName);
+    String updateEmployeeNamesByCountry(String name, String country);
 }
