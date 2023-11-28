@@ -6,7 +6,10 @@ import com.example.demowithtests.service.emailSevice.EmailSenderService;
 import com.example.demowithtests.util.annotations.entity.ActivateCustomAnnotations;
 import com.example.demowithtests.util.annotations.entity.Name;
 import com.example.demowithtests.util.annotations.entity.ToLowerCase;
+import com.example.demowithtests.util.exception.ResourceNotFoundException;
+import com.example.demowithtests.util.exception.ResourceNotUpdateException;
 import com.example.demowithtests.util.exception.ResourceWasDeletedException;
+import com.example.demowithtests.util.exception.ResourcesNotExistException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -58,6 +61,8 @@ public class EmployeeServiceBean implements EmployeeService {
                         .peek(emp -> emp.setIsDeleted(Boolean.TRUE))
                         .toList();
 
+        if (list.isEmpty()) throw new ResourcesNotExistException();
+
         employeeRepository.saveAll(list);
         return list;
     }
@@ -66,8 +71,7 @@ public class EmployeeServiceBean implements EmployeeService {
     public Employee getById(Integer id) {
         return employeeRepository.findById(id)
                 .filter(this::IsEmployeePresent)
-                .orElseThrow(() -> new EntityNotFoundException
-                        ("Employee not found with id = " + id));
+                .orElseThrow(ResourceNotFoundException::new);
     }
 
     @Override
@@ -103,9 +107,9 @@ public class EmployeeServiceBean implements EmployeeService {
                     entity.setName(name);
                     return employeeRepository.save(entity);
                 })
-                .orElseThrow(() -> new EntityNotFoundException
-                        ("Employee not found with id = " + id));
+                .orElseThrow(ResourceNotUpdateException::new);
     }
+
 
     @Override
     public List<Employee> findByNameContaining(String name) {
@@ -240,6 +244,7 @@ public class EmployeeServiceBean implements EmployeeService {
     public String renameAllFrenchCitizens(String name) {
         return "All french " +
                 employeeRepository.updateAllFrenchNames(name)
+                        .orElseThrow(ResourceNotUpdateException::new)
                 + " users were updated. ";
     }
 

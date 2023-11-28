@@ -47,10 +47,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     Employee findEmployeeByEmailNotNull();
 
-    @Query("update Employee set name = ?1 where id = ?2")
+    @Query("update Employee set name = ?1 where id = ?2 and isDeleted = false")
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    void updateEmployeeByName(String name, Integer id);
+    Optional<Employee> updateEmployeeByName(String name, Integer id);
 
     @NotNull
     Page<Employee> findAll(Pageable pageable);
@@ -79,8 +79,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(value = "UPDATE users SET name = ?1 WHERE country = 'France'", nativeQuery = true)
-    Integer updateAllFrenchNames(String name);
+    @Query(value = "UPDATE users SET name = ?1 WHERE country = 'France' " +
+            "AND is_deleted = false", nativeQuery = true)
+    Optional<Integer> updateAllFrenchNames(String name);
 
     @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)

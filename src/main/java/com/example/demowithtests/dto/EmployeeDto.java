@@ -1,6 +1,7 @@
 package com.example.demowithtests.dto;
 
 import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.util.annotations.dto.BlockedCountries;
 import com.example.demowithtests.util.annotations.dto.BlockedEmailDomains;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,6 +25,9 @@ public record EmployeeDto(
         @Schema(description = "Name of an employee.", example = "Billy", requiredMode = Schema.RequiredMode.REQUIRED)
         String name,
 
+        @NotNull
+        @Size(min = 2, max = 60, message = "Country name must be between 2 and 60 characters long")
+        @BlockedCountries
         @Schema(description = "Name of the country.", example = "England", requiredMode = Schema.RequiredMode.REQUIRED)
         String country,
 
