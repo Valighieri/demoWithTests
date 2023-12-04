@@ -15,13 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Employee Service Tests")
@@ -44,6 +44,7 @@ public class ServiceTests {
                 .country("UK")
                 .email("test@mail.com")
                 .gender(Gender.M)
+                .isDeleted(Boolean.FALSE)
                 .build();
     }
 
@@ -66,6 +67,11 @@ public class ServiceTests {
         when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
         Employee expected = service.getById(employee.getId());
         assertThat(expected).isSameAs(employee);
+        verify(employeeRepository).findById(employee.getId());
+
+        employee.setId(null);
+        doThrow(NoSuchElementException.class).when(employeeRepository).findById(employee.getId());
+        assertThrows(NoSuchElementException.class, () -> employeeRepository.findById(employee.getId()));
         verify(employeeRepository).findById(employee.getId());
     }
 
@@ -102,7 +108,21 @@ public class ServiceTests {
     public void deleteEmployeeTest() {
 
         when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
         service.removeById(employee.getId());
-        verify(employeeRepository).delete(employee);
+        assertThat(employee.getIsDeleted()).isEqualTo(Boolean.TRUE);
+        verify(employeeRepository).save(employee);
     }
+
+    @Test
+    @DisplayName("Update employee by name test")
+    public void updateEmployeeByNameTest() {
+
+        when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+        service.updateEmployeeByName("Marly", employee.getId());
+        assertThat(employee.getName()).isEqualTo("Marly");
+        verify(employeeRepository).save(employee);
+    }
+
 }

@@ -1,8 +1,11 @@
 package com.example.demowithtests;
 
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.dto.DeleteDto;
 import com.example.demowithtests.dto.EmployeeDto;
 import com.example.demowithtests.dto.EmployeeReadDto;
+import com.example.demowithtests.dto.UpdateDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.service.EmployeeServiceEM;
 import com.example.demowithtests.util.mappers.EmployeeMapper;
@@ -28,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -73,6 +77,7 @@ public class ControllerTests {
         var employee = Employee.builder()
                 .id(1)
                 .name("Mike")
+                .country("England")
                 .email("mail@mail.com").build();
 
         when(employeeMapper.toEmployee(any(EmployeeDto.class))).thenReturn(employee);
@@ -98,13 +103,21 @@ public class ControllerTests {
     @WithMockUser(roles = "USER")
     public void testSaveWithJpa() throws Exception {
 
+        EmployeeDto response = new EmployeeDto(
+                1, "Mark", "France", null,
+                null, null, null);
+
         var employeeToBeReturn = Employee.builder()
                 .id(1)
                 .name("Mark")
                 .country("France").build();
 
+        when(employeeMapper.toEmployee(any(EmployeeDto.class))).thenReturn(employeeToBeReturn);
+        when(employeeMapper.toEmployeeDto(any(Employee.class))).thenReturn(response);
+
         doReturn(employeeToBeReturn).when(serviceEM).createWithJpa(any());
         when(this.serviceEM.createWithJpa(any(Employee.class))).thenReturn(employeeToBeReturn);
+
         // Execute the POST request
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
                 .post("/api/users/jpa")
@@ -114,6 +127,8 @@ public class ControllerTests {
         mockMvc
                 .perform(builder)
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Mark"))
                 .andReturn().getResponse();
 
         verify(this.serviceEM, times(1)).createWithJpa(any(Employee.class));
@@ -148,43 +163,23 @@ public class ControllerTests {
     }
 
     @Test
-    @DisplayName("PUT API -> /api/users/{id}")
-    @WithMockUser(roles = "ADMIN")
-    public void updatePassByIdTest() throws Exception {
-        var response = new EmployeeReadDto();
-        response.id = 1;
-        var employee = Employee.builder().id(1).build();
-
-        when(employeeMapper.toEmployee(any(EmployeeDto.class))).thenReturn(employee);
-        when(service.updateById(eq(1), any(Employee.class))).thenReturn(employee);
-        when(employeeMapper.toEmployeeReadDto(any(Employee.class))).thenReturn(response);
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .put("/api/users/1")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(employee));
-
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)));
-
-        verify(service).updateById(eq(1), any(Employee.class));
-    }
-
-    @Test
     @DisplayName("DELETE API -> /api/users/{id}")
     @WithMockUser(roles = "ADMIN")
     public void deletePassTest() throws Exception {
 
-        doNothing().when(service).removeById(1);
+        DeleteDto response = new DeleteDto(1, new Date(), "");
+
+        when(service.removeById(anyInt())).thenReturn(new Employee());
+        when(employeeMapper.toDeleteEmployeeDto(any(Employee.class))).thenReturn(response);
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
                 .delete("/api/users/1")
                 .with(csrf());
 
         mockMvc.perform(mockRequest)
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.message").value("Employee was deleted"));
 
         verify(service).removeById(1);
     }
@@ -228,5 +223,33 @@ public class ControllerTests {
         String responseContent = result.getResponse().getContentAsString();
         assertNotNull(responseContent);
     }
+
+    @Test
+    @DisplayName("PATCH API -> /api/users/{id}")
+    @WithMockUser(roles = "ADMIN")
+    public void updateEmployeeByIdTest() throws Exception {
+        var response = new UpdateDto("Mike", "England",
+                "mail@mail.com", Gender.M, null);
+
+        var employee = Employee.builder().id(1).build();
+
+        when(employeeMapper.toEmployee(any(EmployeeDto.class))).thenReturn(employee);
+        when(service.updateById(eq(1), any(Employee.class))).thenReturn(employee);
+        when(employeeMapper.toUpdateEmployeeDto(any(Employee.class))).thenReturn(response);
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .patch("/api/users/1")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(employee));
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Mike")));
+
+        verify(service).updateById(eq(1), any(Employee.class));
+    }
+
+
 
 }
