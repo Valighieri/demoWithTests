@@ -22,11 +22,10 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     #open-in-view: false
     #generate-ddl: true
-  flyway:
-    #    locations: filesystem:.\src\main\resources\db\migration
+  liquibase:
     enabled: true
-    #    clean-disabled: true
-    baseline-on-migrate: true
+    change-log: db/changelog/db.changelog-master.yaml
+
 #  security:
 #    user:
 #      name: admin
@@ -39,6 +38,7 @@ logging:
     org.springframework: info
     #org.hibernate: debug
     com.example.demowithtests: debug
+    org.flywaydb: debug
 # Server configuration
 server:
   port: 8089 #set your port
