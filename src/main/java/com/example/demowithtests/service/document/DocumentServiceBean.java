@@ -2,11 +2,13 @@ package com.example.demowithtests.service.document;
 
 import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.repository.DocumentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,18 @@ public class DocumentServiceBean implements DocumentService {
             throw new RuntimeException();
         } else document.setIsHandled(Boolean.TRUE);
         return documentRepository.save(document);
+    }
+
+    @Override
+    public Document setPassportNotHandle(Integer id) {
+        return Optional.ofNullable(getById(id))
+                .filter(document -> document.getIsHandled().equals(Boolean.TRUE))
+                .map(document -> {
+                    document.setIsHandled(Boolean.FALSE);
+                    return documentRepository.save(document);
+                })
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Document not found"));
     }
 
     /**

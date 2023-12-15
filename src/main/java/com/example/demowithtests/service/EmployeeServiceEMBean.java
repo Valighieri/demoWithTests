@@ -1,13 +1,19 @@
 package com.example.demowithtests.service;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +32,9 @@ public class EmployeeServiceEMBean implements EmployeeServiceEM {
     @Override
     @Transactional //jakarta
     public Employee createWithJpa(Employee employee) {
+        if (employee.getDocument() != null) {
+            employee.getDocument().setIsHandled(Boolean.TRUE);
+        }
         return entityManager.merge(employee);
         /*entityManager.persist(employee);
         entityManager.flush();
@@ -69,4 +78,20 @@ public class EmployeeServiceEMBean implements EmployeeServiceEM {
     public List<Employee> getAllEM() {
         return entityManager.createNativeQuery("SELECT * FROM users", Employee.class).getResultList();
     }
+
+    @Override
+    @Transactional
+    public Employee assignDocumentForEmployeeWithJpa(Integer employeeId, Integer documentId) {
+        Employee employee = Optional.ofNullable(entityManager.find(Employee.class, employeeId))
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + employeeId));
+
+        Document document = Optional.ofNullable(entityManager.find(Document.class, documentId))
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Document not found with id = " + documentId));
+
+        employee.setDocument(document);
+        return entityManager.merge(employee);
+    }
+
 }

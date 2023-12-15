@@ -1,6 +1,8 @@
 package com.example.demowithtests.web;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.dto.*;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.service.EmployeeServiceEM;
@@ -33,6 +35,27 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeServiceEM employeeServiceEM;
     private final EmployeeMapper employeeMapper;
+
+    @PutMapping("/users/docs")
+    @ResponseStatus(HttpStatus.OK)
+    public EmployeeDto assignDocumentForEmployee(@RequestParam Integer employeeId,
+                                                 @RequestParam Integer documentId) {
+        log.debug("assignDocumentForEmployee() - start:");
+        var respond = employeeMapper.toEmployeeDto(
+                employeeService.assignDocumentForEmployee(employeeId, documentId)
+        );
+        log.debug("assignDocumentForEmployee() - stop");
+        return respond;
+    }
+
+    @PatchMapping("/users/docs")
+    @ResponseStatus(HttpStatus.OK)
+    public Document takeAwayDocumentFromEmployee(@RequestParam Integer employeeId) {
+        log.debug("takeAwayDocumentFromEmployee() - start:");
+        var respond = employeeService.takeAwayDocumentFromEmployee(employeeId);
+        log.debug("takeAwayDocumentFromEmployee() - stop");
+        return respond;
+    }
 
     @PostMapping(USER_ENDPOINT)
     @ResponseStatus(HttpStatus.CREATED)

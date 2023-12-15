@@ -1,5 +1,6 @@
 package com.example.demowithtests.service;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Employee;
 
 import java.util.List;
@@ -16,4 +17,7 @@ public interface EmployeeServiceEM {
     Set<String> findAllCountriesWithJpa();
 
     List<Employee> getAllEM();
+
+    Employee assignDocumentForEmployeeWithJpa(Integer employeeId, Integer documentId);
+
 }

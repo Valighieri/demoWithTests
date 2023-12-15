@@ -2,6 +2,7 @@ package com.example.demowithtests.domain;
 
 import com.example.demowithtests.util.annotations.entity.Name;
 import com.example.demowithtests.util.annotations.entity.ToLowerCase;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,7 +42,7 @@ public final class Employee {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @OneToOne  (cascade = CascadeType.ALL)
+    @OneToOne  (cascade = CascadeType.MERGE)
     @JoinColumn(name = "document_id", referencedColumnName = "id")
     private Document document;
 

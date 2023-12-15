@@ -1,5 +1,6 @@
 package com.example.demowithtests.service;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,4 +65,8 @@ public interface EmployeeService {
     String renameAllFrenchCitizens(String replaceName);
 
     String updateEmployeeNamesByCountry(String name, String country);
+
+    Document takeAwayDocumentFromEmployee(Integer employeeId);
+
+    Employee assignDocumentForEmployee(Integer employeeId, Integer documentId);
 }

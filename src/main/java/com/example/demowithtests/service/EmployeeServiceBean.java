@@ -1,8 +1,11 @@
 package com.example.demowithtests.service;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.repository.EmployeeRepository;
+import com.example.demowithtests.service.document.DocumentService;
 import com.example.demowithtests.service.emailSevice.EmailSenderService;
+import com.example.demowithtests.service.history.HistoryService;
 import com.example.demowithtests.util.annotations.entity.ActivateCustomAnnotations;
 import com.example.demowithtests.util.annotations.entity.Name;
 import com.example.demowithtests.util.annotations.entity.ToLowerCase;
@@ -11,7 +14,6 @@ import com.example.demowithtests.util.exception.ResourceNotUpdateException;
 import com.example.demowithtests.util.exception.ResourceWasDeletedException;
 import com.example.demowithtests.util.exception.ResourcesNotExistException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,12 +32,42 @@ public class EmployeeServiceBean implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmailSenderService emailSenderService;
+    private final DocumentService documentService;
+    private final HistoryService historyService;
 
+    @Override
+    public Document takeAwayDocumentFromEmployee(Integer employeeId) {
+        return employeeRepository.findById(employeeId)
+                .filter(this::IsEmployeePresent)
+                .map(entity -> {
+                    Document doc = documentService.setPassportNotHandle(entity.getDocument().getId());
+                    historyService.createHistory(entity, "takeAwayDocument");
+                    return doc;
+                })
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + employeeId));
+    }
+
+    @Override
+    public Employee assignDocumentForEmployee(Integer employeeId, Integer documentId) {
+        return employeeRepository.findById(employeeId)
+                .filter(this::IsEmployeePresent)
+                .map(entity -> {
+                    entity.setDocument(documentService.getById(documentId));
+                    documentService.handlePassport(documentId);
+                    return employeeRepository.save(entity);
+                })
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("Employee not found with id = " + employeeId));
+    }
 
     @Override
     @ActivateCustomAnnotations({Name.class, ToLowerCase.class})
     // @Transactional(propagation = Propagation.MANDATORY)
     public Employee create(Employee employee) {
+        if (employee.getDocument() != null) {
+            employee.getDocument().setIsHandled(Boolean.TRUE);
+        }
         return employeeRepository.save(employee);
         //return employeeRepository.saveAndFlush(employee);
     }

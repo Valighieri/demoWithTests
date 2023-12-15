@@ -10,5 +10,7 @@ public interface DocumentService {
 
     Document handlePassport(Integer id);
 
+    Document setPassportNotHandle(Integer id);
+
     Document addImage(Integer passportId, Integer imageId);
 }
