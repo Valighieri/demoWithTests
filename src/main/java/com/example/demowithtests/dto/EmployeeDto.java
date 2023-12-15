@@ -1,5 +1,6 @@
 package com.example.demowithtests.dto;
 
+import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.util.annotations.dto.BlockedCountries;
 import com.example.demowithtests.util.annotations.dto.BlockedEmailDomains;
@@ -44,7 +45,10 @@ public record EmployeeDto(
         Gender gender,
 
         @Valid
-        Set<AddressDto> addresses) {
+        Set<AddressDto> addresses,
+
+        @Valid
+        Document document) {
 
     public EmployeeDto(Integer id,
                        String name,
@@ -52,7 +56,8 @@ public record EmployeeDto(
                        String email,
                        Date startDate,
                        Gender gender,
-                       Set<AddressDto> addresses) {
+                       Set<AddressDto> addresses,
+                       Document document) {
 
         this.id = id;
         this.name = name;
@@ -61,6 +66,6 @@ public record EmployeeDto(
         this.startDate = startDate != null ? startDate : Date.from(Instant.now());
         this.gender = gender;
         this.addresses = addresses != null ? addresses : new HashSet<>();
-
+        this.document = document;
     }
 }

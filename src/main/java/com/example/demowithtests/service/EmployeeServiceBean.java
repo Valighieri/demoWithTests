@@ -21,6 +21,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,6 +57,7 @@ public class EmployeeServiceBean implements EmployeeService {
                 .map(entity -> {
                     entity.setDocument(documentService.getById(documentId));
                     documentService.handlePassport(documentId);
+                    historyService.createHistory(entity, "assignDocument");
                     return employeeRepository.save(entity);
                 })
                 .orElseThrow(() -> new EntityNotFoundException
@@ -67,6 +70,7 @@ public class EmployeeServiceBean implements EmployeeService {
     public Employee create(Employee employee) {
         if (employee.getDocument() != null) {
             employee.getDocument().setIsHandled(Boolean.TRUE);
+            historyService.createHistory(employee, "createDocumentWithEmployee");
         }
         return employeeRepository.save(employee);
         //return employeeRepository.saveAndFlush(employee);

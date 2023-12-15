@@ -6,6 +6,7 @@ import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.dto.*;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.service.EmployeeServiceEM;
+import com.example.demowithtests.util.mappers.DocumentMapper;
 import com.example.demowithtests.util.mappers.EmployeeMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,6 +36,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeServiceEM employeeServiceEM;
     private final EmployeeMapper employeeMapper;
+    private final DocumentMapper documentMapper;
 
     @PutMapping("/users/docs")
     @ResponseStatus(HttpStatus.OK)
@@ -50,9 +52,11 @@ public class EmployeeController {
 
     @PatchMapping("/users/docs")
     @ResponseStatus(HttpStatus.OK)
-    public Document takeAwayDocumentFromEmployee(@RequestParam Integer employeeId) {
+    public DocumentDto takeAwayDocumentFromEmployee(@RequestParam Integer employeeId) {
         log.debug("takeAwayDocumentFromEmployee() - start:");
-        var respond = employeeService.takeAwayDocumentFromEmployee(employeeId);
+        var respond = documentMapper.toDocumentDto(
+                employeeService.takeAwayDocumentFromEmployee(employeeId)
+        );
         log.debug("takeAwayDocumentFromEmployee() - stop");
         return respond;
     }

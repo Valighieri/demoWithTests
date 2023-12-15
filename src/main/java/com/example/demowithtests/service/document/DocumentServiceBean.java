@@ -2,6 +2,7 @@ package com.example.demowithtests.service.document;
 
 import com.example.demowithtests.domain.Document;
 import com.example.demowithtests.repository.DocumentRepository;
+import com.example.demowithtests.service.history.HistoryService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class DocumentServiceBean implements DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final HistoryService historyService;
 
     /**
      * @param document
@@ -24,6 +26,7 @@ public class DocumentServiceBean implements DocumentService {
     @Override
     public Document create(Document document) {
         document.setExpireDate(LocalDateTime.now().plusYears(5));
+        historyService.createHistory(null, "createDocument");
         return documentRepository.save(document);
     }
 
