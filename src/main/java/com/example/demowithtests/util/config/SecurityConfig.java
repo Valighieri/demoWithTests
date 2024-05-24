@@ -1,6 +1,7 @@
 package com.example.demowithtests.util.config;
 
 import com.example.demowithtests.domain.Role;
+import com.example.demowithtests.domain.RoleName;
 import com.example.demowithtests.repository.RoleRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,12 +30,21 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         List<UserDetails> userList = new ArrayList<>();
 
-        roleRepository.findAll().forEach(entity ->
-                userList.add(
-                        User.withUsername(entity.getUsername())
-                                .password("{noop}" + entity.getPassword())
-                                .roles(entity.getRole()).build()
-                )
+        roleRepository.findAll().forEach(entity -> {
+
+                    List<RoleName> roleNames = entity.getRoleNames();
+                    String[] rolesList = new String[roleNames.size()];
+
+                    for (int i = 0; i < roleNames.size(); i++) {
+                        rolesList[i] = roleNames.get(i).getName();
+                    }
+
+                    userList.add(
+                            User.withUsername(entity.getUsername())
+                                    .password("{noop}" + entity.getPassword())
+                                    .roles(rolesList).build()
+                    );
+                }
         );
 
         return new InMemoryUserDetailsManager(userList);

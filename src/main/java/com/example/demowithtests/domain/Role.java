@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "roles")
 @AllArgsConstructor
@@ -23,6 +26,7 @@ public class Role {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "role")
-    private String role;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private List<RoleName> roleNames = new ArrayList<>();
 }

@@ -68,10 +68,10 @@ public class EmployeeServiceBean implements EmployeeService {
     @ActivateCustomAnnotations({Name.class, ToLowerCase.class})
     // @Transactional(propagation = Propagation.MANDATORY)
     public Employee create(Employee employee) {
-        if (employee.getDocument() != null) {
-            employee.getDocument().setIsHandled(Boolean.TRUE);
-            historyService.createHistory(employee, "createDocumentWithEmployee");
-        }
+//        if (employee.getDocument() != null) {
+//            employee.getDocument().setIsHandled(Boolean.TRUE);
+//            historyService.createHistory(employee, "createDocumentWithEmployee");
+//        }
         return employeeRepository.save(employee);
         //return employeeRepository.saveAndFlush(employee);
     }
